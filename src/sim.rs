@@ -1,4 +1,5 @@
 use crate::{cpu::Cpu, isa, mem::Memory};
+use std::{thread, time::Duration};
 
 pub struct Simulator {
     pub cpu: Cpu,
@@ -22,13 +23,26 @@ impl Simulator {
             let pc = self.cpu.pc as usize;
             let raw = self.mem.read_u32(pc);
             let instr = isa::decode(raw);
+            println!("pc = {:08x} | instr = {:?}", self.cpu.pc, instr);
+
             self.cpu.step(instr);
+            thread::sleep(Duration::from_millis(300));
+
+            println!(
+                "x1 = {:3}, x2 = {:3}, x3 = {:3}\n",
+                self.cpu.regs[1], self.cpu.regs[2], self.cpu.regs[3]
+            );
 
             self.cpu.pc += 4;
 
             if self.cpu.pc > self.mem.data.len() as u32 {
                 break;
             }
+        }
+
+        println!("\n--- Final Register Dump ---");
+        for (i, reg) in self.cpu.regs.iter().enumerate() {
+            println!("x{:02} = {}", i, reg);
         }
     }
 }

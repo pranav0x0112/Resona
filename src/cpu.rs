@@ -1,11 +1,11 @@
 use crate::isa::Instruction;
 
-pub struct CPU {
+pub struct Cpu {
     pub regs: [u32; 32],
     pub pc: u32,
 }
 
-impl CPU {
+impl Cpu {
     pub fn new() -> Self {
         Cpu {
             regs: [0; 32],
@@ -31,7 +31,7 @@ impl CPU {
 
     fn write(&mut self, reg: usize, value: u32) {
         if reg != 0 {
-            self.regs[reg] = val;
+            self.regs[reg] = value;
         }
     }
 }
