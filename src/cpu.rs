@@ -23,7 +23,9 @@ impl Cpu {
                 let result = self.regs[rs1].wrapping_add(imm as u32);
                 self.write(rd, result);
             }
-            Instruction::Unknown(val) => {
+            Instruction::Lui { rd, imm} => {
+                self.write(rd, imm);
+            }            Instruction::Unknown(val) => {
                 println!("Unknown instruction: 0x{:08x} @ pc=0x{:08x}", val, self.pc);
             }
         }

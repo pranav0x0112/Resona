@@ -3,15 +3,21 @@
 pub enum Instruction {
     Add { rd: usize, rs1: usize, rs2: usize },
     Addi { rd: usize, rs1: usize, imm: i32 },
+    Lui { rd: usize, imm: u32},
     Unknown(u32),
 }
 
 pub fn decode(inst: u32) -> Instruction {
     let opcode = inst & 0x7f;
 
-    match opcode{
+    match opcode {
         0x33 => decode_r_type(inst),
         0x13 => decode_i_type(inst),
+        0x37 => {
+            let rd = ((inst >> 7) & 0x1f) as usize;
+            let imm = inst & 0xfffff000; 
+            Instruction::Lui { rd, imm }
+        }
         _ => Instruction::Unknown(inst),
     }
 }
