@@ -25,7 +25,20 @@ impl Cpu {
             }
             Instruction::Lui { rd, imm} => {
                 self.write(rd, imm);
-            }            Instruction::Unknown(val) => {
+            }
+            Instruction::Sub { rd, rs1, rs2} => {
+                self.regs[rd] = self.regs[rs1].wrapping_sub(self.regs[rs2]);
+            }
+            Instruction::Or { rd, rs1, rs2 } => {
+                self.regs[rd] = self.regs[rs1] | self.regs[rs2];
+            }
+            Instruction::And { rd, rs1, rs2 } => {
+                self.regs[rd] = self.regs[rs1] & self.regs[rs2];
+            }
+            Instruction::Xori { rd, rs1, imm} => {
+                self.regs[rd] = self.regs[rs1] ^ (imm as u32);
+            }
+            Instruction::Unknown(val) => {
                 println!("Unknown instruction: 0x{:08x} @ pc=0x{:08x}", val, self.pc);
             }
         }
