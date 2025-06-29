@@ -12,6 +12,7 @@ pub enum Instruction {
     Sw { rs1: usize, rs2: usize, imm: i32},
     Beq { rs1: usize, rs2: usize, imm: i32},
     Bne { rs1: usize, rs2: usize, imm: i32},
+    Jal {rd: usize, imm: i32},
     Unknown(u32),
 }
 
@@ -29,6 +30,15 @@ pub fn decode(inst: u32) -> Instruction {
         0x03 => decode_load(inst),
         0x23 => decode_store(inst),
         0x63 => decode_b_type(inst), // SB-type
+        0x6F => {
+            let rd = ((inst >> 7) & 0x1f) as usize;
+            let imm20 = ((inst >> 31) & 0x1) << 20;
+            let imm10_1 = ((inst >> 21) & 0x3FF) << 1;
+            let imm11 = ((inst >> 20) & 0x1) << 11;
+            let imm19_12 = ((inst >> 12) & 0xFF) << 12;
+            let imm = ((imm20 | imm19_12 | imm11 | imm10_1) as i32) << 11 >> 11; 
+            Instruction::Jal { rd, imm }
+        }
         _ => Instruction::Unknown(inst),
     }
 }

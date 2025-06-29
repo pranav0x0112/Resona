@@ -74,6 +74,11 @@ impl Cpu {
                 true
             }
         }
+        Instruction::Jal { rd, imm } => {
+            self.write(rd, self.pc + 4);
+            self.pc = self.pc.wrapping_add(imm as u32);
+            return false;
+        }
         Instruction::Unknown(val) => {
             println!("Unknown instruction: 0x{:08x} @ pc=0x{:08x}", val, self.pc);
             true
