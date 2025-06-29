@@ -25,7 +25,7 @@ impl Simulator {
             let instr = isa::decode(raw);
             println!("pc = {:08x} | instr = {:?}", self.cpu.pc, instr);
 
-            self.cpu.step(instr);
+            self.cpu.step(instr, &mut self.mem);
             thread::sleep(Duration::from_millis(300));
 
             println!(
