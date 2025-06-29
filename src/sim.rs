@@ -25,15 +25,20 @@ impl Simulator {
             let instr = isa::decode(raw);
             println!("pc = {:08x} | instr = {:?}", self.cpu.pc, instr);
 
-            self.cpu.step(instr, &mut self.mem);
+            let advance = self.cpu.step(instr, &mut self.mem);
+            if advance {
+                self.cpu.pc += 4; 
+            } else {
+                println!("Unknown instruction encountered, halting execution.");
+                break;
+            }
+            
             thread::sleep(Duration::from_millis(300));
 
             println!(
                 "x1 = {:3}, x2 = {:3}, x3 = {:3}\n",
                 self.cpu.regs[1], self.cpu.regs[2], self.cpu.regs[3]
             );
-
-            self.cpu.pc += 4;
 
             if self.cpu.pc > self.mem.data.len() as u32 {
                 break;

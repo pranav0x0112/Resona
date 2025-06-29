@@ -10,6 +10,8 @@ pub enum Instruction {
     Xori { rd: usize, rs1: usize, imm: i32 },
     Lw { rd: usize, rs1: usize, imm: i32},
     Sw { rs1: usize, rs2: usize, imm: i32},
+    Beq { rs1: usize, rs2: usize, imm: i32},
+    Bne { rs1: usize, rs2: usize, imm: i32},
     Unknown(u32),
 }
 
@@ -26,6 +28,7 @@ pub fn decode(inst: u32) -> Instruction {
         }
         0x03 => decode_load(inst),
         0x23 => decode_store(inst),
+        0x63 => decode_b_type(inst), // SB-type
         _ => Instruction::Unknown(inst),
     }
 }
@@ -89,6 +92,27 @@ fn decode_store(inst: u32) -> Instruction {
 
     match funct3 {
         0x2 => Instruction::Sw { rs1, rs2, imm },
+        _ => Instruction::Unknown(inst),
+    }
+}
+
+// B type instructions
+
+fn decode_b_type(inst: u32) -> Instruction {
+    let funct3 = (inst >> 12) & 0x7;
+    let rs1 = ((inst >> 15) & 0x1f) as usize;
+    let rs2 = ((inst >> 20) & 0x1f) as usize;
+
+    // B-type immediate construction
+    let imm = (((inst >> 31) & 0x1) << 12) |
+              (((inst >> 7) & 0x1) << 11) |
+              (((inst >> 25) & 0x3f) << 5) |
+              (((inst >> 8) & 0xf) << 1);
+    let imm = ((imm as i32) << 19) >> 19; // sign-extend 13-bit to i32
+
+    match funct3 {
+        0x0 => Instruction::Beq { rs1, rs2, imm: imm as i32 },
+        0x1 => Instruction::Bne { rs1, rs2, imm: imm as i32 },
         _ => Instruction::Unknown(inst),
     }
 }
