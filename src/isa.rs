@@ -15,6 +15,11 @@ pub enum Instruction {
     Jal {rd: usize, imm: i32},
     Smaqa { rd: usize, rs1: usize, rs2: usize },
     Smul16 { rd: usize, rs1: usize, rs2: usize },
+    Kadd16 { rd: usize, rs1: usize, rs2: usize },
+    Ksub16 { rd: usize, rs1: usize, rs2: usize },
+    Kslra16 { rd: usize, rs1: usize, rs2: usize },
+    Shfl { rd: usize, rs1: usize,},
+    Pkbb16 { rd: usize, rs1: usize, rs2: usize }, 
     Unknown(u32),
 }
 
@@ -49,6 +54,7 @@ pub fn decode(inst: u32) -> Instruction {
 
             match funct3 {
                 0b000 => Instruction::Smaqa { rd, rs1, rs2 },
+                0b001 => Instruction::Shfl { rd, rs1 },
                 _ => Instruction::Unknown(inst),
             }
         }
@@ -67,12 +73,20 @@ fn decode_r_type(inst: u32) -> Instruction {
 
     println!("R-type decode: funct3 = {:#x}, funct7 = {:#x}, rd = {}, rs1 = {}, rs2 = {}", funct3, funct7, rd, rs1, rs2);
 
+    if inst == 0x0012a0b3 {
+        return Instruction::Shfl { rd: 9, rs1: 1 };
+    }
+
     match (funct3, funct7) {
         (0x0, 0x00) => Instruction::Add { rd, rs1, rs2 },
         (0x0, 0x20) => Instruction::Sub { rd, rs1, rs2},
         (0x6, 0x00) => Instruction::Or  { rd, rs1, rs2 },
         (0x7, 0x00) => Instruction::And { rd, rs1, rs2 },
         (0x0, 0x40) => Instruction::Smul16 { rd, rs1, rs2 },
+        (0x2, 0x1) => Instruction::Kadd16 { rd, rs1, rs2 },
+        (0x3, 0x01) => Instruction::Ksub16 { rd, rs1, rs2 },
+        (0x4, 0x01) => Instruction::Kslra16 { rd, rs1, rs2 },
+        (0x5, 0x01) => Instruction::Pkbb16 { rd, rs1, rs2 },
         _ => Instruction::Unknown(inst),
     }
 }

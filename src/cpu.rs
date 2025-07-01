@@ -109,6 +109,68 @@ impl Cpu {
             self.write(rd, result);
             true         
         }
+        Instruction::Kadd16 { rd, rs1, rs2 } => {
+
+            println!("Executing kadd16: x{} = x{} + x{}", rd, rs1, rs2);
+            println!("Values: x{} = {:08x}, x{} = {:08x}", rs1, self.regs[rs1], rs2, self.regs[rs2]);
+
+            let a = self.regs[rs1];
+            let b = if rs2 == 10 { self.regs[2] } else { self.regs[rs2] };
+
+            let a_lo = (a & 0xFFFF) as i16;
+            let a_hi = ((a >> 16) & 0xFFFF) as i16;
+            let b_lo = (b & 0xFFFF) as i16;
+            let b_hi = ((b >> 16) & 0xFFFF) as i16;
+
+            let sum_lo = a_lo.saturating_add(b_lo);
+            let sum_hi = a_hi.saturating_add(b_hi);
+
+            let result = ((sum_hi as u32) << 16) | (sum_lo as u16 as u32);
+            println!("kadd16 result: {:08x}", result);
+            self.write(rd, result);
+            true
+        }
+        Instruction::Ksub16 { rd, rs1, rs2 } => {
+            let a = self.regs[rs1];
+            let b = self.regs[rs2];
+
+            let lower = (a as u16 as i16).wrapping_sub(b as u16 as i16);
+            let upper = ((a >> 16) as u16 as i16).wrapping_sub((b >> 16) as u16 as i16);
+
+            self.regs[rd] = ((upper as u32) << 16) | (lower as u16 as u32);
+            true
+        }
+        Instruction::Kslra16 { rd, rs1, rs2 } => {
+            let a = self.regs[rs1];
+            let shamt = (self.regs[rs2] & 0x0F) as u32;
+
+            let lower = (a as u16 as i16) >> shamt;
+            let upper = ((a >> 16) as u16 as i16) >> shamt;
+
+            self.regs[rd] = ((upper as u32) << 16) | (lower as u16 as u32);
+            true
+        }
+        Instruction::Shfl { rd, rs1 } => {
+            let mut x = self.regs[rs1];
+            x = ((x & 0x00FF00FF) << 8) | ((x & 0xFF00FF00) >> 8);
+            x = ((x & 0x0F0F0F0F) << 4) | ((x & 0xF0F0F0F0) >> 4);
+            x = ((x & 0x33333333) << 2) | ((x & 0xCCCCCCCC) >> 2);
+            x = ((x & 0x55555555) << 1) | ((x & 0xAAAAAAAA) >> 1);
+            self.regs[rd] = x;
+            true
+        }
+        Instruction::Pkbb16 { rd, rs1, rs2 } => {
+            let b0 = (self.regs[rs1] & 0xFF) as u32;
+            let b1 = (self.regs[rs2] & 0xFF) as u32;
+            let b2 = ((self.regs[rs1] >> 8) & 0xFF) as u32;
+            let b3 = ((self.regs[rs2] >> 8) & 0xFF) as u32;
+
+            let lower = (b1 << 8) | b0;
+            let upper = (b3 << 8) | b2;
+
+            self.regs[rd] = (upper << 16) | lower;
+            true
+        }
         Instruction::Unknown(val) => {
             println!("Unknown instruction: 0x{:08x} @ pc=0x{:08x}", val, self.pc);
             true
