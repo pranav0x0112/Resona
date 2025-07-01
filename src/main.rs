@@ -9,15 +9,31 @@ use sim::Simulator;
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    if args.len() > 1 && args[1] == "--test-smaqa" {
-        run_smaqa_test();
-        return;
+    match args.get(1).map(|s| s.as_str()) {
+        Some("--test-smaqa") => {
+            run_smaqa_test();
+        }
+        Some("--help") | Some("-h") => {
+            print_help();
+        }
+        Some(path) => {
+            let mut sim = Simulator::new();
+            sim.load_binary(path);
+            sim.run();
+        }
+        None => {
+            eprintln!("Error: no input file provided.\n");
+            print_help();
+        }
     }
+}
 
-    let bin_path = args.get(1).expect("Usage: resona <bin file>");
-    let mut sim = Simulator::new();
-    sim.load_binary(bin_path);
-    sim.run();
+fn print_help() {
+    println!("Resona - RISC-V DSP Simulator");
+    println!("\nUsage:");
+    println!("  cargo run -- <bin file>       Run a compiled binary file");
+    println!("  cargo run -- --test-smaqa     Run a standalone test of the SMAQA instruction");
+    println!("  cargo run -- --help           Show this help message");
 }
 
 fn run_smaqa_test() {
@@ -37,6 +53,6 @@ fn run_smaqa_test() {
     println!("\n=== SMAQA Test ===");
     println!("x1 = 0x{:08x}", cpu.regs[1]);
     println!("x2 = 0x{:08x}", cpu.regs[2]);
-    println!("x3 = {}", cpu.regs[3]); // Expect: 20
+    println!("x3 = {}", cpu.regs[3]);
     println!("===================\n");
 }
