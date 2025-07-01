@@ -79,6 +79,20 @@ impl Cpu {
             self.pc = self.pc.wrapping_add(imm as u32);
             return false;
         }
+        Instruction::Smaqa { rd, rs1, rs2 } => {
+            let a = self.regs[rs1];
+            let b = self.regs[rs2];
+
+            let mut sum = 0i32;
+            for i in 0..4 {
+                let a_byte = ((a >> (i * 8)) & 0xFF) as i8;
+                let b_byte = ((b >> (i * 8)) & 0xFF) as i8;
+                sum += a_byte as i32 * b_byte as i32;
+            }
+            let acc = self.regs[rd];
+            self.write(rd, acc.wrapping_add(sum as u32));
+            true
+        }
         Instruction::Unknown(val) => {
             println!("Unknown instruction: 0x{:08x} @ pc=0x{:08x}", val, self.pc);
             true

@@ -13,6 +13,7 @@ pub enum Instruction {
     Beq { rs1: usize, rs2: usize, imm: i32},
     Bne { rs1: usize, rs2: usize, imm: i32},
     Jal {rd: usize, imm: i32},
+    Smaqa { rd: usize, rs1: usize, rs2: usize },
     Unknown(u32),
 }
 
@@ -38,6 +39,17 @@ pub fn decode(inst: u32) -> Instruction {
             let imm19_12 = ((inst >> 12) & 0xFF) << 12;
             let imm = ((imm20 | imm19_12 | imm11 | imm10_1) as i32) << 11 >> 11; 
             Instruction::Jal { rd, imm }
+        }
+        0b0001011 => {
+            let rd = ((inst >> 7) & 0x1f) as usize;
+            let funct3 = (inst >> 12) & 0x7;
+            let rs1 = ((inst >> 15) & 0x1f) as usize;
+            let rs2 = ((inst >> 20) & 0x1f) as usize;
+
+            match funct3 {
+                0b000 => Instruction::Smaqa { rd, rs1, rs2 },
+                _ => Instruction::Unknown(inst),
+            }
         }
         _ => Instruction::Unknown(inst),
     }
