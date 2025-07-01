@@ -93,6 +93,22 @@ impl Cpu {
             self.write(rd, acc.wrapping_add(sum as u32));
             true
         }
+        Instruction::Smul16 { rd, rs1, rs2 } => {
+            let a = self.regs[rs1];
+            let b = self.regs[rs2];
+
+            let a_lo = (a & 0xFFFF) as i16 as i32;
+            let a_hi = (a >> 16) as i16 as i32;
+            let b_lo = (b & 0xFFFF) as i16 as i32;
+            let b_hi = (b >> 16) as i16 as i32;
+
+            let lo = ((a_lo as i32 * b_lo as i32) & 0xFFFF) as u32;
+            let hi = ((a_hi as i32 * b_hi as i32) & 0xFFFF) as u32;
+
+            let result = (hi << 16) | lo;
+            self.write(rd, result);
+            true         
+        }
         Instruction::Unknown(val) => {
             println!("Unknown instruction: 0x{:08x} @ pc=0x{:08x}", val, self.pc);
             true

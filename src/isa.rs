@@ -14,6 +14,7 @@ pub enum Instruction {
     Bne { rs1: usize, rs2: usize, imm: i32},
     Jal {rd: usize, imm: i32},
     Smaqa { rd: usize, rs1: usize, rs2: usize },
+    Smul16 { rd: usize, rs1: usize, rs2: usize },
     Unknown(u32),
 }
 
@@ -64,11 +65,14 @@ fn decode_r_type(inst: u32) -> Instruction {
     let rs1 = ((inst >> 15) & 0x1F) as usize;
     let rs2 = ((inst >> 20) & 0x1F) as usize;
 
+    println!("R-type decode: funct3 = {:#x}, funct7 = {:#x}, rd = {}, rs1 = {}, rs2 = {}", funct3, funct7, rd, rs1, rs2);
+
     match (funct3, funct7) {
         (0x0, 0x00) => Instruction::Add { rd, rs1, rs2 },
         (0x0, 0x20) => Instruction::Sub { rd, rs1, rs2},
         (0x6, 0x00) => Instruction::Or  { rd, rs1, rs2 },
         (0x7, 0x00) => Instruction::And { rd, rs1, rs2 },
+        (0x0, 0x40) => Instruction::Smul16 { rd, rs1, rs2 },
         _ => Instruction::Unknown(inst),
     }
 }
