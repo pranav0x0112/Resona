@@ -1,5 +1,4 @@
 use crate::{cpu::Cpu, isa, mem::Memory};
-use std::{thread, time::Duration};
 
 pub struct Simulator {
     pub cpu: Cpu,
@@ -27,24 +26,36 @@ impl Simulator {
 
             let advance = self.cpu.step(instr, &mut self.mem);
             if advance {
-                self.cpu.pc += 4; 
+                self.cpu.pc += 4;
             } else {
                 println!("Unknown instruction encountered, halting execution.");
                 break;
             }
-            
-            thread::sleep(Duration::from_millis(300));
+
+            // Print key register output
+            let x10 = self.cpu.regs[10] as u32;
+            let lo = (x10 & 0xFFFF) as i16;
+            let hi = ((x10 >> 16) & 0xFFFF) as i16;
 
             println!(
-                "x1 = {:3}, x2 = {:3}, x3 = {:3}\n",
-                self.cpu.regs[1], self.cpu.regs[2], self.cpu.regs[3]
+                "x10 = 0x{:08x}  (hi = {}, lo = {})",
+                x10, hi, lo
             );
 
-            if self.cpu.pc > self.mem.data.len() as u32 {
+            for i in 11..=17 {
+                let reg = self.cpu.regs[i];
+                if reg != 0 {
+                    println!("x{:02} = {}", i, reg);
+                }
+            }
+
+            println!();
+            if self.cpu.pc as usize >= self.mem.data.len() {
                 break;
             }
         }
 
+        // Final state
         println!("\n--- Final Register Dump ---");
         for (i, reg) in self.cpu.regs.iter().enumerate() {
             println!("x{:02} = {}", i, reg);

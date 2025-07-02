@@ -102,10 +102,10 @@ impl Cpu {
             let b_lo = (b & 0xFFFF) as i16 as i32;
             let b_hi = (b >> 16) as i16 as i32;
 
-            let lo = ((a_lo as i32 * b_lo as i32) & 0xFFFF) as u32;
-            let hi = ((a_hi as i32 * b_hi as i32) & 0xFFFF) as u32;
+            let lo = a_lo * b_lo;
+            let hi = a_hi * b_hi;
 
-            let result = (hi << 16) | lo;
+            let result = ((hi as u32) << 16) | (lo as u32 & 0xFFFF);
             self.write(rd, result);
             true         
         }

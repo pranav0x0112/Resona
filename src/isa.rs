@@ -82,7 +82,7 @@ fn decode_r_type(inst: u32) -> Instruction {
         (0x0, 0x20) => Instruction::Sub { rd, rs1, rs2},
         (0x6, 0x00) => Instruction::Or  { rd, rs1, rs2 },
         (0x7, 0x00) => Instruction::And { rd, rs1, rs2 },
-        (0x0, 0x40) => Instruction::Smul16 { rd, rs1, rs2 },
+        (0x0, 0x01) => Instruction::Smul16 { rd, rs1, rs2 },
         (0x2, 0x1) => Instruction::Kadd16 { rd, rs1, rs2 },
         (0x3, 0x01) => Instruction::Ksub16 { rd, rs1, rs2 },
         (0x4, 0x01) => Instruction::Kslra16 { rd, rs1, rs2 },
